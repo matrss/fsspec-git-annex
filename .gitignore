@@ -1,0 +1,9 @@
+# SPDX-FileCopyrightText: 2023 Matthias Riße <m.risse@fz-juelich.de>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+*.egg-info/
+.pdm-python
+__pycache__/
+__pypackages__/
+dist/

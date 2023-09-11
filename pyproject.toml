@@ -1,0 +1,48 @@
+# SPDX-FileCopyrightText: 2023 Matthias Riße <m.risse@fz-juelich.de>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+[project]
+name = "fsspec-git-annex"
+description = "A fsspec implementation for git-annex repositories"
+dynamic = ["version"]
+authors = [
+    { name = "Matthias Riße", email = "m.risse@fz-juelich.de" },
+]
+requires-python = ">=3.8"
+readme = "README.md"
+license = { file = "LICENSES/Apache-2.0.txt" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+keywords = ["fsspec", "git-annex"]
+
+dependencies = [
+    "fsspec[fuse]>=2023.9.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/matrss/fsspec-git-annex"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project.entry-points."fsspec.specs"]
+git-annex = "fsspec_git_annex.filesystem:GitAnnexFileSystem"
+
+[tool.pdm.dev-dependencies]
+test = [
+    "pytest>=7.4.2",
+]
+lint = [
+    "black>=23.9.1",
+    "isort>=5.12.0",
+    "ruff>=0.0.287",
+    "reuse>=2.1.0",
+]
+
+[tool.pdm.version]
+source = "scm"

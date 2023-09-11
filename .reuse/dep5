@@ -1,0 +1,14 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: fsspec-git-annex
+Upstream-Contact: Matthias Riße <m.risse@fz-juelich.de>
+Source: https://github.com/matrss/fsspec-git-annex
+
+# Sample paragraph, commented out:
+#
+# Files: src/*
+# Copyright: $YEAR $NAME <$CONTACT>
+# License: ...
+
+Files: pdm.lock
+Copyright: Matthias Riße <m.risse@fz-juelich.de>
+License: CC0-1.0
