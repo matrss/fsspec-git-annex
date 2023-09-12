@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: 2023 Matthias Riße <m.risse@fz-juelich.de>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Main
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
