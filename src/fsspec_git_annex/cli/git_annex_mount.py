@@ -3,21 +3,17 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
+import tempfile
 
 import fsspec
 import fsspec.fuse
 
 
 def run(args):
-    fs = fsspec.filesystem(
-        "blockcache",
-        target_protocol="git-annex",
-        target_options={
-            "git_url": args.git_url,
-            "rev": args.rev,
-        },
-    )
-    fsspec.fuse.run(fs, "/", args.mountpoint)
+    fs = fsspec.filesystem("git-annex", git_url=args.git_url, rev=args.rev)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        fs = fsspec.filesystem("blockcache", fs=fs, cache_storage=str(tmpdir))
+        fsspec.fuse.run(fs, "/", args.mountpoint)
 
 
 def main():
