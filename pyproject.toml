@@ -30,6 +30,9 @@ dependencies = [
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
+[project.scripts]
+git-annex-mount = "fsspec_git_annex.cli.git_annex_mount:main"
+
 [project.entry-points."fsspec.specs"]
 git-annex = "fsspec_git_annex.filesystem:GitAnnexFileSystem"
 
