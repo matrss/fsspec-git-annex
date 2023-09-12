@@ -17,7 +17,7 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
 ]
-keywords = ["fsspec", "git-annex"]
+keywords = ["datalad", "fsspec", "git-annex"]
 
 dependencies = [
     "fsspec[fuse]>=2023.9.0",
