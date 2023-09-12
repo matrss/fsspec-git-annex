@@ -32,7 +32,7 @@ class GitAnnexFile(AbstractBufferedFile):
             with open(tmp_path, "rb") as f:
                 f.seek(start)
                 buf = f.read(end - start)
-            tmp_path.unlink()
+            self.fs._repository.drop(self.path)
             return buf
 
 
