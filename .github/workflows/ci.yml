@@ -1,0 +1,40 @@
+# SPDX-FileCopyrightText: 2023 Matthias Riße <m.risse@fz-juelich.de>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: "3.8"
+      - name: Install dependencies
+        run: |
+          pdm sync -d -G lint
+      - name: Lint with black
+        run: |
+          pdm run -v black --check .
+      - name: Lint with isort
+        run: |
+          pdm run -v isort --check .
+      - name: Lint with ruff
+        run: |
+          pdm run -v ruff check .
+      - name: Lint with reuse
+        run: |
+          pdm run -v reuse lint
