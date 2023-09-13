@@ -10,9 +10,14 @@ import fsspec.fuse
 
 
 def run(args):
+    print("Setting up git-annex fsspec filesystem...")
     fs = fsspec.filesystem("git-annex", git_url=args.git_url, rev=args.rev)
+    print("Done.")
     with tempfile.TemporaryDirectory() as tmpdir:
+        print("Setting up cache layer...")
         fs = fsspec.filesystem("blockcache", fs=fs, cache_storage=str(tmpdir))
+        print("Done.")
+        print(f"Starting fuse mount, check {args.mountpoint}")
         fsspec.fuse.run(fs, "/", args.mountpoint)
 
 
