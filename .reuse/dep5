@@ -12,3 +12,7 @@ Source: https://github.com/matrss/fsspec-git-annex
 Files: pdm.lock
 Copyright: Matthias Riße <m.risse@fz-juelich.de>
 License: CC0-1.0
+
+Files: tests/resources/served_files/*
+Copyright: Matthias Riße <m.risse@fz-juelich.de>
+License: CC0-1.0

@@ -16,6 +16,20 @@ class GitRepo:
         subprocess.run(cmd, capture_output=True, check=True)
         return cls(target_directory)
 
+    @classmethod
+    def init(cls, path):
+        cmd = ["git", "init", str(path)]
+        subprocess.run(cmd, capture_output=True, check=True)
+        return cls(path)
+
+    def add(self, path):
+        cmd = ["git", "-C", str(self.path), "add", str(path)]
+        subprocess.run(cmd, capture_output=True, check=True)
+
+    def commit(self, message):
+        cmd = ["git", "-C", str(self.path), "commit", "-m", str(message)]
+        subprocess.run(cmd, capture_output=True, check=True)
+
     def set_config(self, key, value):
         cmd = ["git", "-C", str(self.path), "config", str(key), str(value)]
         subprocess.run(cmd, capture_output=True, check=True)

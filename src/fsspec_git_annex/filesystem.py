@@ -51,7 +51,7 @@ class GitAnnexFileSystem(AbstractFileSystem):
             # TemporaryDirectory removes the created directory when the object is gc'ed.
             self._temp_dir_obj = tempfile.TemporaryDirectory()
             target_directory = self._temp_dir_obj.name
-        self._repository = GitAnnexRepo.private_clone(git_url, target_directory)
+        self._repository = GitAnnexRepo.clone(git_url, target_directory, private=True)
         self._repository.switch(rev, detach=True)
 
     def ls(self, path, detail=True, **kwargs):

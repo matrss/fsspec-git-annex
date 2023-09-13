@@ -10,13 +10,26 @@ from .git import GitRepo
 
 class GitAnnexRepo(GitRepo):
     @classmethod
-    def private_clone(cls, git_url, target_directory):
-        repo = cls.clone(git_url, target_directory)
-        repo.set_config("annex.private", "true")
-        repo.init()
+    def clone(cls, git_url, target_directory, private=False):
+        repo = super().clone(git_url, target_directory)
+        if private:
+            repo.set_config("annex.private", "true")
+        repo.annex_init()
         return repo
 
-    def init(self):
+    @classmethod
+    def init(cls, path, private=False):
+        repo = super().init(path)
+        if private:
+            repo.set_config("annex.private", "true")
+        repo.annex_init()
+        return repo
+
+    def annex_add(self, path):
+        cmd = ["git", "-C", str(self.path), "annex", "add", str(path)]
+        subprocess.run(cmd, capture_output=True, check=True)
+
+    def annex_init(self):
         cmd = ["git", "-C", str(self.path), "annex", "init"]
         subprocess.run(cmd, capture_output=True, check=True)
 
