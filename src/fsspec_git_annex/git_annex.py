@@ -37,6 +37,8 @@ class GitAnnexRepo(GitRepo):
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         while True:
             progress = process.stdout.readline()
+            if progress == b"":
+                break
             progress = json.loads(progress)
             is_finished_successfully = progress.get("success", False)
             if is_finished_successfully or int(progress["byte-progress"]) >= n:
