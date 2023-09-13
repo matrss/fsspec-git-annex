@@ -45,8 +45,12 @@ class GitAnnexRepo(GitRepo):
                 break
         process.terminate()
 
-    def drop(self, path):
-        cmd = ["git", "-C", str(self.path), "annex", "drop", str(path).lstrip("/")]
+    def drop(self, path, force=False):
+        cmd = (
+            ["git", "-C", str(self.path), "annex", "drop"]
+            + (["--force"] if force else [])
+            + [str(path).lstrip("/")]
+        )
         subprocess.run(cmd, capture_output=True, check=True)
 
     def info(self, path):

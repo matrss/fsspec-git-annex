@@ -21,7 +21,7 @@ class GitAnnexFile(AbstractBufferedFile):
             with open(full_path, "rb") as f:
                 f.seek(start)
                 buf = f.read(end - start)
-            self.fs._repository.drop(self.path)
+            self.fs._repository.drop(self.path, force=True)
             return buf
         else:
             self.fs._repository.get_num_bytes(self.path, end)
@@ -36,7 +36,7 @@ class GitAnnexFile(AbstractBufferedFile):
             with open(data_path, "rb") as f:
                 f.seek(start)
                 buf = f.read(end - start)
-            self.fs._repository.drop(self.path)
+            self.fs._repository.drop(self.path, force=True)
             return buf
 
 
