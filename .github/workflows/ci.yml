@@ -45,15 +45,17 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [ubuntu-latest, macOS-latest]
     steps:
       - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v22
       - name: Set up PDM
         uses: pdm-project/setup-pdm@v3
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
+          nix profile install nixpkgs#git-annex
           pdm sync -d -G test
       - name: Run tests
         run: |
