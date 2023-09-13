@@ -38,7 +38,8 @@ class GitAnnexRepo(GitRepo):
         while True:
             progress = process.stdout.readline()
             progress = json.loads(progress)
-            if int(progress["byte-progress"]) >= n:
+            is_finished_successfully = progress.get("success", False)
+            if is_finished_successfully or int(progress["byte-progress"]) >= n:
                 break
         process.terminate()
 
