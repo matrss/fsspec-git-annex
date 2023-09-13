@@ -39,6 +39,7 @@ git-annex = "fsspec_git_annex.filesystem:GitAnnexFileSystem"
 [tool.pdm.dev-dependencies]
 test = [
     "pytest>=7.4.2",
+    "pytest-cov>=4.1.0",
 ]
 lint = [
     "black>=23.9.1",
