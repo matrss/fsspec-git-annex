@@ -46,11 +46,15 @@ def test_read(fs, path, mode, expected_content):
 
 def test_read_partial(fs):
     expected_content = bytes_data(0)
+    DEFAULT_BLOCK_SIZE = fsspec.spec.AbstractBufferedFile.DEFAULT_BLOCK_SIZE
     assert (
-        len(expected_content) > 12345 + 4321 + 15243
+        len(expected_content) > 12345 + 4321 + DEFAULT_BLOCK_SIZE
     ), "The data produced by bytes_data is too short for this test"
     with fs.open("/git-annex-large-file", "rb") as f:
         assert f.read(12345) == expected_content[:12345]
         assert f.read(4321) == expected_content[12345 : 12345 + 4321]
-        assert f.read(15243) == expected_content[12345 + 4321 : 12345 + 4321 + 15243]
-        assert f.read() == expected_content[12345 + 4321 + 15243 :]
+        assert (
+            f.read(DEFAULT_BLOCK_SIZE)
+            == expected_content[12345 + 4321 : 12345 + 4321 + DEFAULT_BLOCK_SIZE]
+        )
+        assert f.read() == expected_content[12345 + 4321 + DEFAULT_BLOCK_SIZE :]
