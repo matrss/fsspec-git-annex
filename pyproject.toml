@@ -9,7 +9,7 @@ dynamic = ["version"]
 authors = [
     { name = "Matthias Riße", email = "m.risse@fz-juelich.de" },
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 readme = "README.md"
 license = { file = "LICENSES/Apache-2.0.txt" }
 classifiers = [
