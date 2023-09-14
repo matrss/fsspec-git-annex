@@ -41,7 +41,8 @@ def file_server():
 
 
 @pytest.fixture(scope="session")
-def simple_repository():
+def simple_repository(file_server):
+    server_address, server_dir = file_server
     tmpdir = tempfile.TemporaryDirectory()
     tmpdir_path = Path(tmpdir.name)
     repository = GitAnnexRepo.init(tmpdir_path)
@@ -59,5 +60,10 @@ def simple_repository():
     path.write_text("annex'ed text")
     repository.annex_add(path)
     repository.commit("Add annex'ed file")
+    # From a URL
+    repository.set_config("annex.security.allowed-ip-addresses", "127.0.0.1")
+    repository.addurl(f"http://{server_address}/shared/hello-world.txt")
+    repository.commit("Add file from URL")
+    repository.drop("/127.0.0.1_shared_hello-world.txt")
 
     return repository

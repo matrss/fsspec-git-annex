@@ -33,6 +33,10 @@ class GitAnnexRepo(GitRepo):
         cmd = ["git", "-C", str(self.path), "annex", "init"]
         subprocess.run(cmd, capture_output=True, check=True)
 
+    def addurl(self, url):
+        cmd = ["git", "-C", str(self.path), "annex", "addurl", str(url)]
+        subprocess.run(cmd, capture_output=True, check=True)
+
     def get(self, path):
         cmd = ["git", "-C", str(self.path), "annex", "get", str(path).lstrip("/")]
         subprocess.run(cmd, capture_output=True, check=True)
