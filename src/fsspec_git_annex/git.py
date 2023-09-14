@@ -34,9 +34,7 @@ class GitRepo:
         cmd = ["git", "-C", str(self.path), "config", str(key), str(value)]
         subprocess.run(cmd, capture_output=True, check=True)
 
-    def ls_tree(self, path=None, trees_only=False):
-        if path is None:
-            path = "."
+    def ls_tree(self, path, trees_only=False):
         path = "./" + str(path).lstrip("/")
         if (self.path / path).is_dir():
             path += "/"
