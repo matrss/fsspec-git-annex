@@ -18,10 +18,8 @@ class GitAnnexRepo(GitRepo):
         return repo
 
     @classmethod
-    def init(cls, path, private=False):
+    def init(cls, path):
         repo = super().init(path)
-        if private:
-            repo.set_config("annex.private", "true")
         repo.annex_init()
         return repo
 
