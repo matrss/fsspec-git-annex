@@ -12,6 +12,8 @@ import pytest
 
 from fsspec_git_annex.git_annex import GitAnnexRepo
 
+from .utils import bytes_data
+
 
 @pytest.fixture(scope="session")
 def file_server():
@@ -65,5 +67,10 @@ def simple_repository(file_server):
     repository.addurl(f"http://{server_address}/shared/hello-world.txt")
     repository.commit("Add file from URL")
     repository.drop("/127.0.0.1_shared_hello-world.txt")
+    # A larger annex'ed file
+    path = tmpdir_path / "git-annex-large-file"
+    path.write_bytes(bytes_data(0))
+    repository.annex_add(path)
+    repository.commit("Add large annex'ed file")
 
     return repository
