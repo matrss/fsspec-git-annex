@@ -49,11 +49,6 @@ class GitRepo:
         files = result.stdout.split(b"\0")[:-1]
         return [f.decode() for f in files]
 
-    def show(self, obj):
-        cmd = ["git", "-C", str(self.path), "show", str(obj)]
-        result = subprocess.run(cmd, capture_output=True, check=True)
-        return result.stdout
-
     def switch(self, commit, detach=False):
         cmd = (
             [
