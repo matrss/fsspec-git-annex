@@ -65,7 +65,10 @@ class GitAnnexFileSystem(AbstractFileSystem):
                 stat = full_path.lstat()
                 try:
                     annex_info = self._repository.info(e)
-                    size = int(annex_info["size"])
+                    if "unknown" in annex_info["size"]:
+                        size = None
+                    else:
+                        size = int(annex_info["size"])
                 except (subprocess.CalledProcessError, KeyError):
                     size = stat.st_size
                 detailed_entries.append(

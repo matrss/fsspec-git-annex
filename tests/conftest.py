@@ -43,7 +43,7 @@ def file_server():
 
 
 @pytest.fixture(scope="session")
-def simple_repository(file_server):
+def test_repository(file_server):
     server_address, server_dir = file_server
     tmpdir = tempfile.TemporaryDirectory()
     tmpdir_path = Path(tmpdir.name)
@@ -62,11 +62,25 @@ def simple_repository(file_server):
     path.write_text("annex'ed text")
     repository.annex_add(path)
     repository.commit("Add annex'ed file")
-    # From a URL
+    # From a URL in 3 different ways
     repository.set_config("annex.security.allowed-ip-addresses", "127.0.0.1")
-    repository.addurl(f"http://{server_address}/shared/hello-world.txt")
+    repository.addurl(
+        f"http://{server_address}/shared/hello-world.txt",
+        path="hello-world_relaxed.txt",
+        relaxed=True,
+    )
+    repository.commit("Add file from URL (relaxed)")
+    repository.addurl(
+        f"http://{server_address}/shared/hello-world.txt",
+        path="hello-world_fast.txt",
+        fast=True,
+    )
+    repository.commit("Add file from URL (fast)")
+    repository.addurl(
+        f"http://{server_address}/shared/hello-world.txt", path="hello-world.txt"
+    )
     repository.commit("Add file from URL")
-    repository.drop("/127.0.0.1_shared_hello-world.txt")
+    repository.drop("hello-world.txt")
     # A larger annex'ed file
     path = tmpdir_path / "git-annex-large-file"
     path.write_bytes(bytes_data(0))

@@ -31,8 +31,14 @@ class GitAnnexRepo(GitRepo):
         cmd = ["git", "-C", str(self.path), "annex", "init"]
         subprocess.run(cmd, capture_output=True, check=True)
 
-    def addurl(self, url):
-        cmd = ["git", "-C", str(self.path), "annex", "addurl", str(url)]
+    def addurl(self, url, path=None, fast=False, relaxed=False):
+        cmd = (
+            ["git", "-C", str(self.path), "annex", "addurl"]
+            + (["--file", str(path)] if path is not None else [])
+            + (["--relaxed"] if relaxed else [])
+            + (["--fast"] if fast else [])
+            + [str(url)]
+        )
         subprocess.run(cmd, capture_output=True, check=True)
 
     def get(self, path):

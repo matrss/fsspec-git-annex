@@ -9,8 +9,8 @@ from .utils import bytes_data
 
 
 @pytest.fixture(scope="module")
-def fs(simple_repository):
-    fs = fsspec.filesystem("git-annex", git_url=simple_repository.path)
+def fs(test_repository):
+    fs = fsspec.filesystem("git-annex", git_url=test_repository.path)
     # For web access to local file server:
     fs._repository.set_config("annex.security.allowed-ip-addresses", "127.0.0.1")
     return fs
@@ -18,10 +18,12 @@ def fs(simple_repository):
 
 def test_ls(fs):
     assert sorted(fs.ls("", detail=False)) == [
-        "/127.0.0.1_shared_hello-world.txt",
         "/git-annex-file",
         "/git-annex-large-file",
         "/git-file",
+        "/hello-world.txt",
+        "/hello-world_fast.txt",
+        "/hello-world_relaxed.txt",
     ]
 
 
@@ -29,11 +31,25 @@ def test_ls(fs):
     "path,mode,expected_content",
     [
         ("/git-file", "r", "some text"),
-        ("/git-annex-file", "r", "annex'ed text"),
-        ("/127.0.0.1_shared_hello-world.txt", "r", "Hello World\n"),
         ("/git-file", "rb", b"some text"),
+        ("/git-annex-file", "r", "annex'ed text"),
         ("/git-annex-file", "rb", b"annex'ed text"),
-        ("/127.0.0.1_shared_hello-world.txt", "rb", b"Hello World\n"),
+        ("/hello-world.txt", "r", "Hello World\n"),
+        ("/hello-world.txt", "rb", b"Hello World\n"),
+        ("/hello-world_fast.txt", "r", "Hello World\n"),
+        ("/hello-world_fast.txt", "rb", b"Hello World\n"),
+        *(
+            pytest.param(
+                *x,
+                marks=pytest.mark.xfail(
+                    reason="Missing size on files from `git annex addurl --relaxed`."
+                ),
+            )
+            for x in [
+                ("/hello-world_relaxed.txt", "r", "Hello World\n"),
+                ("/hello-world_relaxed.txt", "rb", b"Hello World\n"),
+            ]
+        ),
         ("/git-annex-large-file", "rb", lambda: bytes_data(0)),
     ],
 )
