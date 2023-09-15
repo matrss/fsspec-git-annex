@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
+import logging
 import tempfile
 
 import fsspec
@@ -22,6 +23,7 @@ def run(args):
 
 
 def main():
+    logging.basicConfig()
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--rev",

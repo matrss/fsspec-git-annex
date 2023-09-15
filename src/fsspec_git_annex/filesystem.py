@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+import logging
 import subprocess
 import tempfile
 from pathlib import Path
@@ -10,6 +11,8 @@ from fsspec import AbstractFileSystem
 from fsspec.spec import AbstractBufferedFile
 
 from .git_annex import GitAnnexRepo
+
+logger = logging.getLogger(__name__)
 
 
 class GitAnnexFile(AbstractBufferedFile):
@@ -65,10 +68,14 @@ class GitAnnexFileSystem(AbstractFileSystem):
                 stat = full_path.lstat()
                 try:
                     annex_info = self._repository.info(e)
-                    if "unknown" in annex_info["size"]:
-                        size = None
-                    else:
-                        size = int(annex_info["size"])
+                    size = int(annex_info["size"].split(" ", 1)[0])
+                    if size == 0:
+                        logger.warning(
+                            "'%s' has a reported size of 0 bytes; git-annex probably "
+                            "does not know the real size of the file. This will lead to"
+                            " issues reading it.",
+                            str(e),
+                        )
                 except (subprocess.CalledProcessError, KeyError):
                     size = stat.st_size
                 detailed_entries.append(
