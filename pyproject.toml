@@ -50,3 +50,6 @@ lint = [
 
 [tool.pdm.version]
 source = "scm"
+
+[tool.isort]
+profile = "black"
