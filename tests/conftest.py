@@ -43,8 +43,32 @@ def file_server():
 
 
 @pytest.fixture(scope="session")
-def test_repository(file_server):
-    server_address, server_dir = file_server
+def test_submodule(file_server):
+    server_address, server_path = file_server
+    submodule_path = server_path / "shared" / "submodule"
+    repository = GitAnnexRepo.init(submodule_path)
+
+    # Add some content to the repository:
+    # A git file
+    path = submodule_path / "git-file"
+    path.write_text("some text in submodule")
+    repository.add(path)
+    repository.commit("Add git file")
+    # An annex'ed file
+    path = submodule_path / "git-annex-file"
+    path.write_text("annex'ed text in submodule")
+    repository.annex_add(path)
+    repository.commit("Add annex'ed file")
+
+    # This is needed to make the repository clone-able via http
+    repository.update_server_info()
+
+    return repository
+
+
+@pytest.fixture(scope="session")
+def test_repository(file_server, test_submodule):
+    server_address, server_path = file_server
     tmpdir = tempfile.TemporaryDirectory()
     tmpdir_path = Path(tmpdir.name)
     repository = GitAnnexRepo.init(tmpdir_path)
@@ -86,5 +110,10 @@ def test_repository(file_server):
     path.write_bytes(bytes_data(0))
     repository.annex_add(path)
     repository.commit("Add large annex'ed file")
+
+    repository.submodule_add(
+        f"http://{server_address}/{test_submodule.path.relative_to(server_path)}/.git"
+    )
+    repository.commit("Add submodule")
 
     return repository

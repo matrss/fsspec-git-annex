@@ -59,3 +59,37 @@ class GitRepo:
             + [str(commit)]
         )
         subprocess.run(cmd, capture_output=True, check=True)
+
+    def submodule_add(self, git_url):
+        cmd = ["git", "-C", str(self.path), "submodule", "add", str(git_url)]
+        subprocess.run(cmd, capture_output=True, check=True)
+
+    def update_server_info(self):
+        cmd = ["git", "-C", str(self.path), "update-server-info"]
+        subprocess.run(cmd, capture_output=True, check=True)
+
+    def submodule_list(self):
+        cmd = [
+            "git",
+            "-C",
+            str(self.path),
+            "submodule",
+            "foreach",
+            "--quiet",
+            "--recursive",
+            r"printf '%s\0' $displaypath",
+        ]
+        result = subprocess.run(cmd, capture_output=True, check=True, text=True)
+        return result.stdout.split("\0")[:-1]
+
+    def submodule_update(self):
+        cmd = [
+            "git",
+            "-C",
+            str(self.path),
+            "submodule",
+            "update",
+            "--init",
+            "--recursive",
+        ]
+        subprocess.run(cmd, capture_output=True, check=True)
