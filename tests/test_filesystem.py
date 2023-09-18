@@ -11,36 +11,36 @@ from .utils import bytes_data
 @pytest.fixture(scope="module")
 def fs(test_repository):
     fs = fsspec.filesystem("git-annex", git_url=test_repository.path)
-    # For web access to local file server:
-    fs._repositories["/"].set_config("annex.security.allowed-ip-addresses", "127.0.0.1")
-    fs._repositories["/submodule"].set_config(
-        "annex.security.allowed-ip-addresses", "127.0.0.1"
-    )
     return fs
 
 
+test_repository_listing = {
+    "/.gitmodules",
+    "/git-annex-file",
+    "/git-annex-large-file",
+    "/git-file",
+    "/hello-world.txt",
+    "/hello-world_fast.txt",
+    "/hello-world_relaxed.txt",
+    "/submodule",
+}
+
+
 def test_ls(fs):
-    assert set(fs.ls("", detail=False)) == {
-        "/.gitmodules",
-        "/git-annex-file",
-        "/git-annex-large-file",
-        "/git-file",
-        "/hello-world.txt",
-        "/hello-world_fast.txt",
-        "/hello-world_relaxed.txt",
-        "/submodule",
-    }
+    assert set(fs.ls("", detail=False)) == test_repository_listing
+
+
+test_submodule_listing = {
+    "/submodule/git-annex-file",
+    "/submodule/git-file",
+}
 
 
 def test_ls_submodule(fs):
-    assert set(fs.ls("/submodule", detail=False)) == {
-        "/submodule/git-annex-file",
-        "/submodule/git-file",
-    }
+    assert set(fs.ls("/submodule", detail=False)) == test_submodule_listing
 
 
-@pytest.mark.parametrize(
-    "path,mode,expected_content",
+test_repository_content = (
     [
         ("/git-file", "r", "some text"),
         ("/git-file", "rb", b"some text"),
@@ -68,6 +68,12 @@ def test_ls_submodule(fs):
         ("/submodule/git-annex-file", "rb", b"annex'ed text in submodule"),
         ("/git-annex-large-file", "rb", lambda: bytes_data(0)),
     ],
+)
+
+
+@pytest.mark.parametrize(
+    "path,mode,expected_content",
+    *test_repository_content,
 )
 def test_read(fs, path, mode, expected_content):
     if callable(expected_content):
