@@ -12,19 +12,31 @@ from .utils import bytes_data
 def fs(test_repository):
     fs = fsspec.filesystem("git-annex", git_url=test_repository.path)
     # For web access to local file server:
-    fs._repository.set_config("annex.security.allowed-ip-addresses", "127.0.0.1")
+    fs._repositories["/"].set_config("annex.security.allowed-ip-addresses", "127.0.0.1")
+    fs._repositories["/submodule"].set_config(
+        "annex.security.allowed-ip-addresses", "127.0.0.1"
+    )
     return fs
 
 
 def test_ls(fs):
-    assert sorted(fs.ls("", detail=False)) == [
+    assert set(fs.ls("", detail=False)) == {
+        "/.gitmodules",
         "/git-annex-file",
         "/git-annex-large-file",
         "/git-file",
         "/hello-world.txt",
         "/hello-world_fast.txt",
         "/hello-world_relaxed.txt",
-    ]
+        "/submodule",
+    }
+
+
+def test_ls_submodule(fs):
+    assert set(fs.ls("/submodule", detail=False)) == {
+        "/submodule/git-annex-file",
+        "/submodule/git-file",
+    }
 
 
 @pytest.mark.parametrize(
@@ -50,6 +62,10 @@ def test_ls(fs):
                 ("/hello-world_relaxed.txt", "rb", b"Hello World\n"),
             ]
         ),
+        ("/submodule/git-file", "r", "some text in submodule"),
+        ("/submodule/git-file", "rb", b"some text in submodule"),
+        ("/submodule/git-annex-file", "r", "annex'ed text in submodule"),
+        ("/submodule/git-annex-file", "rb", b"annex'ed text in submodule"),
         ("/git-annex-large-file", "rb", lambda: bytes_data(0)),
     ],
 )

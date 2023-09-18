@@ -17,21 +17,23 @@ logger = logging.getLogger(__name__)
 
 class GitAnnexFile(AbstractBufferedFile):
     def _fetch_range(self, start, end):
+        repository = self.fs._get_repository_for_path(self.path)
+        relative_path = (
+            self.fs._repositories["/"].path / Path(self.path).relative_to("/")
+        ).relative_to(repository.path)
         if end >= self.size:
-            self.fs._repository.get(self.path)
-            path = Path(self.path)
-            full_path = self.fs._repository.path / path.relative_to("/")
+            repository.get(relative_path)
+            full_path = repository.path / relative_path
             with open(full_path, "rb") as f:
                 f.seek(start)
                 buf = f.read(end - start)
-            self.fs._repository.drop(self.path, force=True)
+            repository.drop(relative_path, force=True)
             return buf
         else:
-            self.fs._repository.get_num_bytes(self.path, end)
-            path = Path(self.path)
-            full_path = (self.fs._repository.path / path.relative_to("/")).resolve()
+            repository.get_num_bytes(relative_path, end)
+            full_path = (repository.path / relative_path).resolve()
             filename = full_path.name
-            tmp_path = self.fs._repository.path / ".git" / "annex" / "tmp" / filename
+            tmp_path = repository.path / ".git" / "annex" / "tmp" / filename
             if tmp_path.exists():
                 data_path = tmp_path
             else:  # file was fetched completely
@@ -39,7 +41,7 @@ class GitAnnexFile(AbstractBufferedFile):
             with open(data_path, "rb") as f:
                 f.seek(start)
                 buf = f.read(end - start)
-            self.fs._repository.drop(self.path, force=True)
+            repository.drop(relative_path, force=True)
             return buf
 
 
@@ -54,20 +56,45 @@ class GitAnnexFileSystem(AbstractFileSystem):
             # TemporaryDirectory removes the created directory when the object is gc'ed.
             self._temp_dir_obj = tempfile.TemporaryDirectory()
             target_directory = self._temp_dir_obj.name
-        self._repository = GitAnnexRepo.clone(git_url, target_directory, private=True)
-        self._repository.switch(rev, detach=True)
+        target_directory = Path(target_directory)
+        self._repositories = {}
+        self._repositories["/"] = GitAnnexRepo.clone(
+            git_url, target_directory, private=True
+        )
+        self._repositories["/"].switch(rev, detach=True)
+        self._repositories["/"].submodule_update()
+        for submodule_path in self._repositories["/"].submodule_list():
+            self._repositories["/" + submodule_path] = GitAnnexRepo(
+                target_directory / submodule_path
+            )
+
+    def _get_repository_for_path(self, path):
+        # If path itself is a repository return that
+        if str(path) in self._repositories.keys():
+            return self._repositories[str(path)]
+        # If any of paths parents are a repository return that
+        for parent in Path(path).parents:
+            if str(parent) in self._repositories.keys():
+                return self._repositories[str(parent)]
+        # Otherwise use the root repository
+        return self._repositories["/"]
 
     def ls(self, path, detail=True, **kwargs):
         path = self._strip_protocol(path)
+
         if path not in self.dircache:
-            entries = self._repository.ls_tree(path)
+            repository = self._get_repository_for_path(path)
+            relative_path = (
+                self._repositories["/"].path / Path(path).relative_to("/")
+            ).relative_to(repository.path)
+            entries = repository.ls_tree(relative_path)
             detailed_entries = []
             for e in entries:
-                full_path = self._repository.path / e
+                full_path = repository.path / e
                 entry_type = "directory" if full_path.is_dir() else "file"
                 stat = full_path.lstat()
                 try:
-                    annex_info = self._repository.info(e)
+                    annex_info = repository.info(e)
                     size = int(annex_info["size"].split(" ", 1)[0])
                     if size == 0:
                         logger.warning(
@@ -85,7 +112,11 @@ class GitAnnexFileSystem(AbstractFileSystem):
                         "ino": stat.st_ino,
                         "mode": 0o755 if entry_type == "directory" else 0o644,
                         "mtime": stat.st_mtime,
-                        "name": "/" + e,
+                        "name": str(
+                            Path("/")
+                            / repository.path.relative_to(self._repositories["/"].path)
+                            / e
+                        ),
                         "nlink": stat.st_nlink,
                         "size": size,
                         "type": entry_type,
@@ -100,8 +131,9 @@ class GitAnnexFileSystem(AbstractFileSystem):
 
     def info(self, path, **kwargs):
         path = self._strip_protocol(path)
+        repository = self._get_repository_for_path(path)
         if path == "/":
-            stat = self._repository.path.stat()
+            stat = repository.path.stat()
             return {
                 "created": stat.st_ctime,
                 "gid": stat.st_gid,
