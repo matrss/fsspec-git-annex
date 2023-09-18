@@ -48,6 +48,10 @@ jobs:
         os: [ubuntu-latest, macOS-latest]
     steps:
       - uses: actions/checkout@v4
+      - name: Set up environment
+        run: |
+          git config --global user.email "test@github-actions.test"
+          git config --global user.name "GitHub Actions"
       - uses: cachix/install-nix-action@v22
       - name: Set up PDM
         uses: pdm-project/setup-pdm@v3
