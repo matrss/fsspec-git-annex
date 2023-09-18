@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 import re
 import shutil
 import subprocess
@@ -16,7 +17,26 @@ from .utils import bytes_data
 
 
 @pytest.fixture(scope="session")
-def file_server():
+def git_config():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        git_config_file = Path(tmpdir) / "git_config"
+        os.environ["GIT_CONFIG_GLOBAL"] = str(git_config_file)
+        git_config_file.write_text(
+            """\
+[user]
+	name = pytest
+	email = test@example.com
+
+[annex "security"]
+	allowed-ip-addresses = 127.0.0.1
+"""
+        )
+        print(git_config_file.read_text())
+        yield
+
+
+@pytest.fixture(scope="session")
+def file_server(git_config):
     resources_path = Path(__file__).parent / "resources" / "served_files"
     with tempfile.TemporaryDirectory() as tmpdir:
         shutil.copytree(resources_path, Path(tmpdir) / "shared")
@@ -87,7 +107,6 @@ def test_repository(file_server, test_submodule):
     repository.annex_add(path)
     repository.commit("Add annex'ed file")
     # From a URL in 3 different ways
-    repository.set_config("annex.security.allowed-ip-addresses", "127.0.0.1")
     repository.addurl(
         f"http://{server_address}/shared/hello-world.txt",
         path="hello-world_relaxed.txt",
