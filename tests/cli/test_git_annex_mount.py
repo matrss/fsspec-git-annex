@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import subprocess
+import sys
 import tempfile
 import time
 from pathlib import Path
@@ -13,6 +14,11 @@ from ..test_filesystem import (
     test_repository_content,
     test_repository_listing,
     test_submodule_listing,
+)
+
+pytestmark = pytest.mark.skipif(
+    sys.platform.startswith("darwin"),
+    reason="I could not get fuse to run in the GitHub Actions macOS runner.",
 )
 
 
