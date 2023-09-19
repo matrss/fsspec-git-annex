@@ -53,6 +53,15 @@ jobs:
         uses: pdm-project/setup-pdm@v3
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install dependencies on ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install fuse
+      - name: Install dependencies on macOS
+        if: matrix.os == 'macOS-latest'
+        run: |
+          brew install --cask macfuse
       - name: Install dependencies
         run: |
           nix profile install nixpkgs#git-annex
