@@ -34,13 +34,14 @@ class GitAnnexFile(AbstractBufferedFile):
             full_path = (repository.path / relative_path).resolve()
             filename = full_path.name
             tmp_path = repository.path / ".git" / "annex" / "tmp" / filename
-            if tmp_path.exists():
-                data_path = tmp_path
-            else:  # file was fetched completely
-                data_path = full_path
-            with open(data_path, "rb") as f:
-                f.seek(start)
-                buf = f.read(end - start)
+            try:
+                with open(tmp_path, "rb") as f:
+                    f.seek(start)
+                    buf = f.read(end - start)
+            except FileNotFoundError:
+                with open(full_path, "rb") as f:
+                    f.seek(start)
+                    buf = f.read(end - start)
             repository.drop(relative_path, force=True)
             return buf
 
