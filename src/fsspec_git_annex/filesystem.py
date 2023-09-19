@@ -21,29 +21,20 @@ class GitAnnexFile(AbstractBufferedFile):
         relative_path = (
             self.fs._repositories["/"].path / Path(self.path).relative_to("/")
         ).relative_to(repository.path)
-        if end >= self.size:
-            repository.get(relative_path)
-            full_path = repository.path / relative_path
+        repository.get_num_bytes(relative_path, end)
+        full_path = (repository.path / relative_path).resolve()
+        filename = full_path.name
+        tmp_path = repository.path / ".git" / "annex" / "tmp" / filename
+        try:
+            with open(tmp_path, "rb") as f:
+                f.seek(start)
+                buf = f.read(end - start)
+        except FileNotFoundError:
             with open(full_path, "rb") as f:
                 f.seek(start)
                 buf = f.read(end - start)
-            repository.drop(relative_path, force=True)
-            return buf
-        else:
-            repository.get_num_bytes(relative_path, end)
-            full_path = (repository.path / relative_path).resolve()
-            filename = full_path.name
-            tmp_path = repository.path / ".git" / "annex" / "tmp" / filename
-            try:
-                with open(tmp_path, "rb") as f:
-                    f.seek(start)
-                    buf = f.read(end - start)
-            except FileNotFoundError:
-                with open(full_path, "rb") as f:
-                    f.seek(start)
-                    buf = f.read(end - start)
-            repository.drop(relative_path, force=True)
-            return buf
+        repository.drop(relative_path, force=True)
+        return buf
 
 
 class GitAnnexFileSystem(AbstractFileSystem):
