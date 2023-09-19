@@ -31,7 +31,6 @@ def git_config():
 	allowed-ip-addresses = 127.0.0.1
 """
         )
-        print(git_config_file.read_text())
         yield
 
 
