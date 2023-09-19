@@ -51,16 +51,18 @@ class GitAnnexRepo(GitRepo):
             "--json-progress",
             str(path).lstrip("/"),
         ]
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        while True:
-            progress = process.stdout.readline()
-            if progress == b"":
-                break
-            progress = json.loads(progress)
-            is_finished_successfully = progress.get("success", False)
-            if is_finished_successfully or int(progress["byte-progress"]) >= n:
-                break
-        process.terminate()
+        with subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        ) as get_process:
+            while True:
+                progress = get_process.stdout.readline()
+                if progress == b"":
+                    break
+                progress = json.loads(progress)
+                is_finished_successfully = progress.get("success", False)
+                if is_finished_successfully or int(progress["byte-progress"]) >= n:
+                    break
+            get_process.terminate()
 
     def drop(self, path, force=False):
         cmd = (
