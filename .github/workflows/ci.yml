@@ -42,7 +42,7 @@ jobs:
   test:
     name: Test
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
+    timeout-minutes: 30
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]
@@ -61,7 +61,12 @@ jobs:
           sudo apt-get install fuse
       - name: Install dependencies
         run: |
-          nix profile install nixpkgs#git-annex
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            flake="github:nixos/nixpkgs/nixos-23.05"
+          elif [ "${{ matrix.os }}" = "macOS-latest" ]; then
+            flake="github:nixos/nixpkgs/nixpkgs-23.05-darwin"
+          fi
+          nix profile install "$flake"#git-annex
           pdm sync -d -G test
       - name: Run tests
         run: |
