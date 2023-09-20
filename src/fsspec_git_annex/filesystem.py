@@ -68,8 +68,6 @@ class GitAnnexFileSystem(AbstractFileSystem):
         for parent in Path(path).parents:
             if str(parent) in self._repositories.keys():
                 return self._repositories[str(parent)]
-        # Otherwise use the root repository
-        return self._repositories["/"]
 
     def ls(self, path, detail=True, **kwargs):
         path = self._strip_protocol(path)
